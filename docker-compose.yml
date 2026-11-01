@@ -28,6 +28,8 @@ services:
       DB_PASSWORD: ${DB_PASSWORD:-subsense}
       SUBSENSE_REPORTING_CURRENCY: ${SUBSENSE_REPORTING_CURRENCY:-GBP}
       SUBSENSE_FX_BASE_URL: ${SUBSENSE_FX_BASE_URL:-https://api.frankfurter.dev/v1}
+      # Test-only "run rollover now" endpoint; set to true for end-to-end tests only.
+      SUBSENSE_JOBS_MANUAL_TRIGGER: ${SUBSENSE_JOBS_MANUAL_TRIGGER:-false}
     ports:
       - "8080:8080"
     depends_on:

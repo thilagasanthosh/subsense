@@ -42,6 +42,8 @@ export interface Subscription {
   paymentLabel: string | null;
   owner: string;
   status: SubscriptionStatus;
+  /** Set once a cancel takes effect (or a renewal lapses); the subscription is then read-only. */
+  cancelledOn: string | null;
   decision: Decision;
   downgradeAmount: Money | null;
   usageRating: UsageRating | null;

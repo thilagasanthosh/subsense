@@ -165,6 +165,11 @@ class SubscriptionApiIT {
   }
 
   @Test
+  void rolloverTriggerIsOffByDefault() throws Exception {
+    mvc.perform(post("/api/v1/jobs/rollover")).andExpect(status().isNotFound());
+  }
+
+  @Test
   void listsTheSeededCategories() throws Exception {
     mvc.perform(get("/api/v1/categories"))
         .andExpect(status().isOk())

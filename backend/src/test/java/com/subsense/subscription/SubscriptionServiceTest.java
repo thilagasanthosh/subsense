@@ -10,8 +10,10 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.subsense.common.ConflictException;
 import com.subsense.common.FieldValidationException;
 import com.subsense.common.NotFoundException;
+import com.subsense.support.SubscriptionBuilder;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -108,5 +110,34 @@ class SubscriptionServiceTest {
     when(subscriptions.findByIdAndDeletedAtIsNull(42L)).thenReturn(Optional.empty());
 
     assertThatThrownBy(() -> service.get(42L)).isInstanceOf(NotFoundException.class);
+  }
+
+  @Test
+  void rejectsDecisionOnCancelledSubscription() {
+    when(subscriptions.findByIdAndDeletedAtIsNull(7L)).thenReturn(Optional.of(cancelled()));
+
+    assertThatThrownBy(
+            () ->
+                service.decide(
+                    7L, new DecisionRequest(Decision.RENEW, null, null), DecisionSource.UI))
+        .isInstanceOf(ConflictException.class)
+        .hasMessage("Subscription is cancelled");
+    verify(history, never()).save(any());
+  }
+
+  @Test
+  void rejectsEditOfCancelledSubscription() {
+    when(subscriptions.findByIdAndDeletedAtIsNull(7L)).thenReturn(Optional.of(cancelled()));
+
+    assertThatThrownBy(() -> service.update(7L, aSubscription().named("Renamed").details()))
+        .isInstanceOf(ConflictException.class)
+        .hasMessage("Subscription is cancelled");
+  }
+
+  private static Subscription cancelled() {
+    Subscription s =
+        aSubscription().renewingOn(SubscriptionBuilder.TODAY).decided(Decision.CANCEL).build();
+    s.rollOver(SubscriptionBuilder.TODAY, NOW);
+    return s;
   }
 }

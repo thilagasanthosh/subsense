@@ -15,6 +15,7 @@ import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
 
 public class SubscriptionSteps {
 
@@ -50,6 +51,23 @@ public class SubscriptionSteps {
   public void existingSubscription(
       String cycle, String name, String amount, String currency, int days) {
     api.createSubscription(name, cycle.toUpperCase(), amount, currency, inDays(days));
+  }
+
+  @Given("a {string} subscription {string} costing {string} {string} that renewed yesterday")
+  public void subscriptionThatRenewedYesterday(
+      String cycle, String name, String amount, String currency) {
+    api.createSubscription(name, cycle.toUpperCase(), amount, currency, inDays(-1));
+  }
+
+  @Given("a {string} free trial {string} then costing {string} {string} that ended yesterday")
+  public void freeTrialThatEndedYesterday(
+      String cycle, String name, String priceAfterTrial, String currency) {
+    api.createFreeTrial(name, cycle.toUpperCase(), priceAfterTrial, currency, inDays(-1));
+  }
+
+  @When("the daily renewal rollover runs")
+  public void rolloverRuns() {
+    api.runRollover();
   }
 
   @When(
@@ -104,6 +122,13 @@ public class SubscriptionSteps {
     Locator panel =
         page.getByRole(AriaRole.REGION, new Page.GetByRoleOptions().setName("Needs a decision"));
     assertThat(panel.getByText(name)).not().isVisible();
+  }
+
+  @Then("{string} renews one month after yesterday")
+  public void renewsOneMonthAfterYesterday(String name) {
+    LocalDate today = LocalDate.now(ZONE);
+    long days = ChronoUnit.DAYS.between(today, today.minusDays(1).plusMonths(1));
+    listShows(name, "In " + days + " days");
   }
 
   @Then("{string} is shown as {string}")

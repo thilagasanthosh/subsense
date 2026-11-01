@@ -38,9 +38,11 @@ function Detail({ subscription: s }: { subscription: Subscription }) {
           </p>
         </div>
         <div className="actions">
-          <Link to={`/subscriptions/${s.id}/edit`} className="btn">
-            Edit
-          </Link>
+          {s.cancelledOn === null && (
+            <Link to={`/subscriptions/${s.id}/edit`} className="btn">
+              Edit
+            </Link>
+          )}
           <button type="button" className="btn btn-danger" onClick={onDelete}>
             Delete
           </button>
@@ -110,7 +112,14 @@ function Detail({ subscription: s }: { subscription: Subscription }) {
           )}
         </section>
 
-        <DecisionPanel subscription={s} />
+        {/* Cancelled subscriptions are kept for reports but can no longer be decided on. */}
+        {s.cancelledOn !== null ? (
+          <section className="card">
+            <p>Cancelled on {formatDate(s.cancelledOn)}. Kept for your reports.</p>
+          </section>
+        ) : (
+          <DecisionPanel subscription={s} />
+        )}
         <DecisionHistory id={s.id} />
       </div>
     </>

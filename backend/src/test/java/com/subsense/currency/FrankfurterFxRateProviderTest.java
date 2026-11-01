@@ -31,7 +31,8 @@ class FrankfurterFxRateProviderTest {
           new SubSenseProperties(
               GBP,
               ZoneId.of("Europe/London"),
-              new SubSenseProperties.Fx(BASE_URL, "0 0 6 * * *", false)));
+              new SubSenseProperties.Fx(BASE_URL, "0 0 6 * * *", false),
+              null));
 
   @Test
   void readsRatesPerEuroForEverySupportedCurrency() {

@@ -38,3 +38,9 @@ subsense:
     base-url: ${SUBSENSE_FX_BASE_URL:https://api.frankfurter.dev/v1}
     refresh-cron: ${SUBSENSE_FX_REFRESH_CRON:0 0 6 * * *}
     refresh-on-startup: ${SUBSENSE_FX_REFRESH_ON_STARTUP:true}
+  rollover:
+    cron: ${SUBSENSE_ROLLOVER_CRON:0 15 0 * * *}
+    run-on-startup: ${SUBSENSE_ROLLOVER_ON_STARTUP:true}
+  jobs:
+    # Test-only POST /api/v1/jobs/rollover; never enable outside end-to-end tests.
+    manual-trigger: ${SUBSENSE_JOBS_MANUAL_TRIGGER:false}

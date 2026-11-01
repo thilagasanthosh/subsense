@@ -31,6 +31,8 @@ public final class SubscriptionBuilder {
   private int noticeDays;
   private String paymentLabel = "Visa";
   private Decision decision = Decision.PENDING;
+  private BigDecimal downgradeAmount;
+  private boolean autoRenew = true;
 
   private SubscriptionBuilder() {}
 
@@ -106,6 +108,17 @@ public final class SubscriptionBuilder {
     return this;
   }
 
+  public SubscriptionBuilder downgradingTo(String newAmount) {
+    this.decision = Decision.DOWNGRADE;
+    this.downgradeAmount = new BigDecimal(newAmount);
+    return this;
+  }
+
+  public SubscriptionBuilder notAutoRenewing() {
+    this.autoRenew = false;
+    return this;
+  }
+
   public SubscriptionDetails details() {
     return new SubscriptionDetails(
         name,
@@ -119,7 +132,7 @@ public final class SubscriptionBuilder {
         startDate,
         nextRenewalDate,
         noticeDays,
-        true,
+        autoRenew,
         paymentLabel,
         "Me",
         null,
@@ -129,7 +142,7 @@ public final class SubscriptionBuilder {
   public Subscription build() {
     Subscription subscription = Subscription.create(details(), category, NOW);
     if (decision != Decision.PENDING) {
-      subscription.decide(decision, null, NOW);
+      subscription.decide(decision, downgradeAmount, NOW);
     }
     return subscription;
   }

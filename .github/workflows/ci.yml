@@ -61,6 +61,8 @@ jobs:
     runs-on: ubuntu-latest
     env:
       SUBSENSE_FX_BASE_URL: http://fx-stub:8080
+      # Enables the test-only POST /api/v1/jobs/rollover used by the @F-04 scenarios.
+      SUBSENSE_JOBS_MANUAL_TRIGGER: 'true'
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-java@v6
