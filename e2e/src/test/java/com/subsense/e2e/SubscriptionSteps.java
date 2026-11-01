@@ -7,6 +7,7 @@ import com.microsoft.playwright.BrowserType;
 import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Page;
 import com.microsoft.playwright.Playwright;
+import com.microsoft.playwright.Response;
 import com.microsoft.playwright.options.AriaRole;
 import io.cucumber.java.After;
 import io.cucumber.java.Before;
@@ -97,7 +98,17 @@ public class SubscriptionSteps {
   @When("I cancel {string} from the dashboard")
   public void cancelFromDashboard(String name) {
     openDashboard();
-    page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Cancel " + name)).click();
+    // Wait for the decision to be saved, so later steps (UI or API) see it.
+    Response saved =
+        page.waitForResponse(
+            r -> r.url().contains("/decisions") && r.request().method().equals("POST"),
+            () ->
+                page.getByRole(
+                        AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Cancel " + name))
+                    .click());
+    if (!saved.ok()) {
+      throw new IllegalStateException("Saving the decision returned " + saved.status());
+    }
   }
 
   @Then("the subscriptions list shows {string} at {string}")
