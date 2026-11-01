@@ -32,7 +32,6 @@ Open a pull request for the current branch into `main`, following `CLAUDE.md` an
      - **AI review findings:** each `/review-pr` finding and what was done about it (fixed in which commit, accepted trade-off, or deferred).
      - **Checklist:** tick only items that are true. Leave the others unticked and say why.
      - **Screenshots:** list which UI screens changed, so I can attach images. Don't invent images.
-   - End the body with: `🤖 Generated with [Claude Code](https://claude.com/claude-code)`
    - Save the body to `$(git rev-parse --git-dir)/PR_BODY.md`. That path is never committed.
 
 5. **Show me the title and body, and stop.** Ask whether to push the branch and open the PR, and whether it should be a draft. Do not push until I say yes.
