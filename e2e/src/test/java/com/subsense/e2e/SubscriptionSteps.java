@@ -7,6 +7,7 @@ import com.microsoft.playwright.BrowserType;
 import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Page;
 import com.microsoft.playwright.Playwright;
+import com.microsoft.playwright.Response;
 import com.microsoft.playwright.options.AriaRole;
 import io.cucumber.java.After;
 import io.cucumber.java.Before;
@@ -15,6 +16,7 @@ import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
 
 public class SubscriptionSteps {
 
@@ -52,6 +54,23 @@ public class SubscriptionSteps {
     api.createSubscription(name, cycle.toUpperCase(), amount, currency, inDays(days));
   }
 
+  @Given("a {string} subscription {string} costing {string} {string} that renewed yesterday")
+  public void subscriptionThatRenewedYesterday(
+      String cycle, String name, String amount, String currency) {
+    api.createSubscription(name, cycle.toUpperCase(), amount, currency, inDays(-1));
+  }
+
+  @Given("a {string} free trial {string} then costing {string} {string} that ended yesterday")
+  public void freeTrialThatEndedYesterday(
+      String cycle, String name, String priceAfterTrial, String currency) {
+    api.createFreeTrial(name, cycle.toUpperCase(), priceAfterTrial, currency, inDays(-1));
+  }
+
+  @When("the daily renewal rollover runs")
+  public void rolloverRuns() {
+    api.runRollover();
+  }
+
   @When(
       "I add a {string} subscription {string} from {string} costing {string} {string}"
           + " renewing in {int} days")
@@ -79,7 +98,17 @@ public class SubscriptionSteps {
   @When("I cancel {string} from the dashboard")
   public void cancelFromDashboard(String name) {
     openDashboard();
-    page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Cancel " + name)).click();
+    // Wait for the decision to be saved, so later steps (UI or API) see it.
+    Response saved =
+        page.waitForResponse(
+            r -> r.url().contains("/decisions") && r.request().method().equals("POST"),
+            () ->
+                page.getByRole(
+                        AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Cancel " + name))
+                    .click());
+    if (!saved.ok()) {
+      throw new IllegalStateException("Saving the decision returned " + saved.status());
+    }
   }
 
   @Then("the subscriptions list shows {string} at {string}")
@@ -104,6 +133,13 @@ public class SubscriptionSteps {
     Locator panel =
         page.getByRole(AriaRole.REGION, new Page.GetByRoleOptions().setName("Needs a decision"));
     assertThat(panel.getByText(name)).not().isVisible();
+  }
+
+  @Then("{string} renews one month after yesterday")
+  public void renewsOneMonthAfterYesterday(String name) {
+    LocalDate today = LocalDate.now(ZONE);
+    long days = ChronoUnit.DAYS.between(today, today.minusDays(1).plusMonths(1));
+    listShows(name, "In " + days + " days");
   }
 
   @Then("{string} is shown as {string}")

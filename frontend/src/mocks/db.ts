@@ -54,6 +54,7 @@ interface Row extends SubscriptionDetails {
   id: number;
   decision: Subscription['decision'];
   downgradeAmount: string | null;
+  cancelledOn?: string;
 }
 
 let nextId = 1;
@@ -119,6 +120,10 @@ export function resetDb() {
       owner: 'Family',
     }),
     sample('Mobile plan', 'Jio', 7, 'MONTHLY', '349.00', 'INR', 22, { paymentLabel: 'UPI' }),
+    sample('Disney+', 'Disney', 3, 'MONTHLY', '7.99', 'GBP', 0, {
+      decision: 'CANCEL',
+      cancelledOn: isoDaysFromToday(0),
+    }),
   ];
 }
 
@@ -148,7 +153,14 @@ function view(r: Row): Subscription {
     autoRenew: r.autoRenew,
     paymentLabel: r.paymentLabel,
     owner: r.owner,
-    status: r.decision === 'CANCEL' ? 'CANCELLING' : r.type === 'FREE_TRIAL' ? 'TRIAL' : 'ACTIVE',
+    status: r.cancelledOn
+      ? 'CANCELLED'
+      : r.decision === 'CANCEL'
+        ? 'CANCELLING'
+        : r.type === 'FREE_TRIAL'
+          ? 'TRIAL'
+          : 'ACTIVE',
+    cancelledOn: r.cancelledOn ?? null,
     decision: r.decision,
     downgradeAmount: r.downgradeAmount ? toMoney(Number(r.downgradeAmount), r.currency) : null,
     usageRating: r.usageRating,
@@ -201,7 +213,7 @@ export const db = {
   decisions: (id: number): DecisionEntry[] => decisions[id] ?? [],
 
   dashboard: (): DashboardSummary => {
-    const charging = db.list().filter((s) => s.status !== 'CANCELLING');
+    const charging = db.list().filter((s) => s.status !== 'CANCELLING' && s.status !== 'CANCELLED');
     const monthly = charging.reduce(
       (sum, s) => sum + Number(s.monthlyEquivalentReporting.amount),
       0,

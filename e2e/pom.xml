@@ -84,7 +84,8 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
-        <version>3.5.3</version>
+        <!-- 3.5.3 reports 0 tests for the Cucumber suite, so failing scenarios passed the build. -->
+        <version>3.5.4</version>
         <configuration>
           <includes>
             <include>**/RunCucumberTest.java</include>

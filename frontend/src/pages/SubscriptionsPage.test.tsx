@@ -29,4 +29,19 @@ describe('SubscriptionsPage', () => {
     expect(await screen.findByText('then £29.99')).toBeInTheDocument();
     expect(screen.getByText('Free trial')).toBeInTheDocument();
   });
+
+  it('keeps a cancelled subscription in the list, marked as cancelled', async () => {
+    renderAt('/subscriptions', '/subscriptions', <SubscriptionsPage />);
+
+    const row = (await screen.findByText('Disney+')).closest('tr')!;
+    expect(row).toHaveTextContent('Cancelled');
+  });
+
+  it('shows a cancelled subscription as ended rather than renewing', async () => {
+    renderAt('/subscriptions', '/subscriptions', <SubscriptionsPage />);
+
+    const row = (await screen.findByText('Disney+')).closest('tr')!;
+    expect(row).toHaveTextContent('Ended');
+    expect(row).not.toHaveTextContent('Today');
+  });
 });

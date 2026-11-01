@@ -5,7 +5,10 @@ import java.time.ZoneId;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @ConfigurationProperties(prefix = "subsense")
-public record SubSenseProperties(CurrencyCode reportingCurrency, ZoneId timeZone, Fx fx) {
+public record SubSenseProperties(
+    CurrencyCode reportingCurrency, ZoneId timeZone, Fx fx, Rollover rollover) {
 
   public record Fx(String baseUrl, String refreshCron, boolean refreshOnStartup) {}
+
+  public record Rollover(String cron, boolean runOnStartup) {}
 }

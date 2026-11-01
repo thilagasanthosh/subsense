@@ -47,6 +47,24 @@ final class ApiClient {
     send("POST", "/subscriptions", body, 201);
   }
 
+  void createFreeTrial(
+      String name, String cycle, String priceAfterTrial, String currency, LocalDate trialEnd) {
+    String body =
+        """
+        {"name":"%s","vendor":"Example Ltd","categoryId":%d,"type":"FREE_TRIAL",
+         "billingCycle":"%s","amount":"0.00","priceAfterTrial":"%s","currency":"%s",
+         "startDate":"2025-01-01","nextRenewalDate":"%s","noticeDays":0,
+         "autoRenew":true,"owner":"Me"}
+        """
+            .formatted(name, firstCategoryId(), cycle, priceAfterTrial, currency, trialEnd);
+    send("POST", "/subscriptions", body, 201);
+  }
+
+  /** Test-only trigger, enabled in the e2e stack by SUBSENSE_JOBS_MANUAL_TRIGGER. */
+  void runRollover() {
+    send("POST", "/jobs/rollover", null, 200);
+  }
+
   private JsonNode send(String method, String path, String body, int expectedStatus) {
     HttpRequest request =
         HttpRequest.newBuilder(URI.create(baseUrl + path))

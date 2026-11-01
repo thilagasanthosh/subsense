@@ -26,7 +26,10 @@ export function RenewalsPage() {
   const { data = [], isLoading, error } = useSubscriptions();
   const upcoming = data.filter(
     (s) =>
-      s.status !== 'CANCELLING' && s.daysUntilRenewal >= 0 && s.daysUntilRenewal <= WINDOW_DAYS,
+      s.status !== 'CANCELLING' &&
+      s.status !== 'CANCELLED' &&
+      s.daysUntilRenewal >= 0 &&
+      s.daysUntilRenewal <= WINDOW_DAYS,
   );
 
   return (

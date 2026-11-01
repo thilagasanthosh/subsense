@@ -29,7 +29,7 @@ npm run format && npm run lint && npm run typecheck && npm test
 npm run dev:mock                               # UI with sample data, no backend
 
 # End-to-end (fixed exchange rates from the WireMock stub)
-SUBSENSE_FX_BASE_URL=http://fx-stub:8080 docker compose --profile e2e up -d --build --wait
+SUBSENSE_FX_BASE_URL=http://fx-stub:8080 SUBSENSE_JOBS_MANUAL_TRIGGER=true docker compose --profile e2e up -d --build --wait
 mvn -pl e2e verify                            # all Cucumber scenarios
 mvn -pl e2e verify -Dcucumber.filter.tags="@F-05"
 ```

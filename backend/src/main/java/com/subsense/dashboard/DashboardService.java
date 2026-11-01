@@ -18,7 +18,7 @@ import org.springframework.stereotype.Service;
 
 /**
  * Works out dashboard figures. Spend covers subscriptions that will keep charging: anything not
- * being cancelled, with free trials counted at their price after the trial.
+ * being cancelled or already cancelled, with free trials counted at their price after the trial.
  */
 @Service
 public class DashboardService {
@@ -33,7 +33,10 @@ public class DashboardService {
       LocalDate today) {
 
     List<Subscription> charging =
-        subscriptions.stream().filter(s -> s.status() != SubscriptionStatus.CANCELLING).toList();
+        subscriptions.stream()
+            .filter(s -> s.status() != SubscriptionStatus.CANCELLING)
+            .filter(s -> s.status() != SubscriptionStatus.CANCELLED)
+            .toList();
 
     Money monthly = Money.zero(reporting);
     Map<String, Money> byCategory = new LinkedHashMap<>();

@@ -120,7 +120,11 @@ export function SubscriptionsPage() {
                       <td>{CYCLE_LABELS[s.billingCycle]}</td>
                       <td className="num">{formatMoney(s.monthlyEquivalentReporting)}</td>
                       <td>
-                        <RenewalBadge days={s.daysUntilRenewal} />
+                        {s.status === 'CANCELLED' ? (
+                          <span className="badge badge-neutral">Ended</span>
+                        ) : (
+                          <RenewalBadge days={s.daysUntilRenewal} />
+                        )}
                       </td>
                       <td>
                         <StatusBadge status={s.status} />

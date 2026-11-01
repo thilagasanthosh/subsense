@@ -14,6 +14,7 @@ import com.subsense.subscription.Category;
 import com.subsense.subscription.Decision;
 import com.subsense.subscription.Subscription;
 import com.subsense.subscription.SubscriptionView;
+import com.subsense.support.SubscriptionBuilder;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
@@ -62,6 +63,21 @@ class DashboardServiceTest {
 
     assertThat(summary.monthlySpend()).isEqualTo(new MoneyView("10.00", GBP));
     assertThat(summary.activeCount()).isEqualTo(1);
+  }
+
+  @Test
+  void excludesCancelledFromSpendAndCounts() {
+    Subscription cancelled =
+        aSubscription().costing("99.00", GBP).renewingOn(TODAY).decided(Decision.CANCEL).build();
+    cancelled.rollOver(TODAY, SubscriptionBuilder.NOW);
+    List<Subscription> subscriptions =
+        List.of(aSubscription().costing("10.00", GBP).build(), cancelled);
+
+    DashboardSummary summary = service.summarise(subscriptions, RATES, GBP, TODAY);
+
+    assertThat(summary.monthlySpend()).isEqualTo(new MoneyView("10.00", GBP));
+    assertThat(summary.activeCount()).isEqualTo(1);
+    assertThat(summary.renewalsNext30Days()).isEqualTo(1);
   }
 
   @Test

@@ -22,13 +22,14 @@ I pay for AI tools, streaming, a TV licence, antivirus and mobile plans in the U
 - **Dashboard:** monthly and projected yearly spend, spend by category, and renewals in the next 14 days that still need a decision.
 - **Renewal decisions:** Renew, Cancel or Downgrade, with an audit trail of who decided and when.
 - **Renewals timeline:** the next 90 days grouped by week.
+- **Renewal rollover:** every night (and on startup) renewal dates move on by one cycle and decisions take effect: Cancel becomes Cancelled, Downgrade applies the new price, free trials become paid plans. Month ends stay correct (31 Jan → 28/29 Feb → 31 Mar), and every automatic change is in the audit trail.
 - **Privacy by design:** payment methods are labels only ("Visa ending 4417"); validation rejects anything that looks like a card number, in the UI, the API and the database.
 
 **Roadmap** (full detail in [SPEC.md](SPEC.md))
 
 | Phase | What |
 |---|---|
-| 2 | Renewal rollover with month-end handling, **push reminders to my phone via [ntfy](https://ntfy.sh)** (sent exactly once), budgets, "still using it?" reviews and savings tracking |
+| 2 | **Push reminders to my phone via [ntfy](https://ntfy.sh)** (sent exactly once), budgets, "still using it?" reviews and savings tracking |
 | 3 | Payment log with price-change detection, CSV import/export, calendar (.ics) feed, receipts, login |
 | 4 | **Talk to my data:** an MCP server so AI clients such as Claude Desktop can answer "What renews next month, and what could I cancel?" from live data, alongside the web UI |
 
@@ -125,6 +126,9 @@ UI only, no backend: `npm run dev:mock` serves the app with sample data from a m
 | `SUBSENSE_TIME_ZONE` | `Europe/London` | Defines "today" for renewal dates |
 | `SUBSENSE_FX_BASE_URL` | `https://api.frankfurter.dev/v1` | Exchange rate service |
 | `SUBSENSE_FX_REFRESH_CRON` | `0 0 6 * * *` | When rates refresh |
+| `SUBSENSE_ROLLOVER_CRON` | `0 15 0 * * *` | When renewals roll over (in `SUBSENSE_TIME_ZONE`) |
+| `SUBSENSE_ROLLOVER_ON_STARTUP` | `true` | Catch up missed rollovers when the app starts |
+| `SUBSENSE_JOBS_MANUAL_TRIGGER` | `false` | Test only: enables `POST /api/v1/jobs/rollover` for end-to-end tests |
 
 Copy `.env.example` to `.env` to override them for Docker Compose.
 
@@ -138,7 +142,8 @@ mvn -pl backend verify
 cd frontend && npm run lint && npm run typecheck && npm test
 
 # End-to-end: Cucumber scenarios in a real browser against the full stack, with fixed exchange rates
-SUBSENSE_FX_BASE_URL=http://fx-stub:8080 docker compose --profile e2e up -d --build --wait
+SUBSENSE_FX_BASE_URL=http://fx-stub:8080 SUBSENSE_JOBS_MANUAL_TRIGGER=true \
+  docker compose --profile e2e up -d --build --wait
 mvn -pl e2e test-compile exec:java -Dexec.classpathScope=test \
   -Dexec.mainClass=com.microsoft.playwright.CLI -Dexec.args="install chromium"   # first run only
 mvn -pl e2e verify                                   # all scenarios
@@ -179,6 +184,7 @@ I use AI tooling (Claude Code) as a standard part of every stage, with a human d
 | Acceptance tests | Turns acceptance criteria into Gherkin and suggests edge cases (month ends, leap years, rounding, time zones) | Keep the scenarios that matter |
 | Implementation | `/tdd F-xx` works in red-green-refactor cycles, running the formatter and tests each step | Review every diff |
 | Code review | `/review-pr` checks the branch against the spec and [CLAUDE.md](CLAUDE.md): correctness, tests, security, money and date handling, SOLID/DRY/KISS/YAGNI | Fix or reject findings; CI must be green |
+| Pull request | `/create-pr` checks the branch and commits, runs the checks, and fills in the [PR template](.github/pull_request_template.md) with the changes, test results and review findings | Approve before anything is pushed; merge myself |
 | Debugging | Reads logs and proposes a root cause with a failing test that reproduces it | Confirm the root cause |
 
 The rules the agent follows live in [CLAUDE.md](CLAUDE.md), the commands in [.claude/commands](.claude/commands), and every pull request records how AI was used ([template](.github/pull_request_template.md)).
@@ -194,7 +200,7 @@ subsense/
 │   ├── adr/            Architecture decision records
 │   ├── features/       Feature plans written before implementation
 │   └── screenshots/
-├── .claude/commands/   AI workflow commands: plan-feature, tdd, review-pr
+├── .claude/commands/   AI workflow commands: plan-feature, tdd, review-pr, create-pr
 ├── .github/            CI/CD workflows, PR template, Dependabot
 ├── docker-compose.yml
 ├── SPEC.md             Product and technical specification

@@ -18,6 +18,7 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
+import java.util.Optional;
 
 @Entity
 @Table(name = "subscription")
@@ -61,6 +62,9 @@ public class Subscription {
   @Column(name = "next_renewal_date", nullable = false)
   private LocalDate nextRenewalDate;
 
+  @Column(name = "renewal_anchor_day", nullable = false)
+  private int renewalAnchorDay;
+
   @Column(name = "notice_days", nullable = false)
   private int noticeDays;
 
@@ -85,6 +89,9 @@ public class Subscription {
   private UsageRating usageRating;
 
   private String notes;
+
+  @Column(name = "cancelled_on")
+  private LocalDate cancelledOn;
 
   @Column(name = "deleted_at")
   private Instant deletedAt;
@@ -117,6 +124,10 @@ public class Subscription {
     this.priceAfterTrial = details.priceAfterTrial();
     this.currency = details.currency();
     this.startDate = details.startDate();
+    if (!details.nextRenewalDate().equals(nextRenewalDate)) {
+      // Only a date the user picks sets the anchor; a rolled-over 28 Feb keeps its 31.
+      this.renewalAnchorDay = details.nextRenewalDate().getDayOfMonth();
+    }
     this.nextRenewalDate = details.nextRenewalDate();
     this.noticeDays = details.noticeDays();
     this.autoRenew = details.autoRenew();
@@ -131,6 +142,60 @@ public class Subscription {
     this.decision = newDecision;
     this.downgradeAmount = newDecision == Decision.DOWNGRADE ? newAmount : null;
     this.updatedAt = now;
+  }
+
+  /**
+   * Applies the decision for one renewal: a cancel takes effect on the renewal date, anything else
+   * once the date has passed. Empty when nothing was due.
+   */
+  public Optional<RolloverOutcome> rollOver(LocalDate today, Instant now) {
+    if (cancelledOn != null || nextRenewalDate.isAfter(today)) {
+      return Optional.empty();
+    }
+    if (decision == Decision.CANCEL) {
+      return Optional.of(end("Cancelled on " + nextRenewalDate, now));
+    }
+    if (nextRenewalDate.equals(today)) {
+      return Optional.empty();
+    }
+    if (decision == Decision.PENDING && !autoRenew) {
+      return Optional.of(end("Lapsed on " + nextRenewalDate + " (auto-renew off)", now));
+    }
+    return Optional.of(renew(now));
+  }
+
+  private RolloverOutcome end(String reason, Instant now) {
+    this.cancelledOn = nextRenewalDate;
+    this.updatedAt = now;
+    return new RolloverOutcome(Decision.CANCEL, null, reason);
+  }
+
+  private RolloverOutcome renew(Instant now) {
+    String priceChange = "";
+    if (type == SubscriptionType.FREE_TRIAL) {
+      this.type = SubscriptionType.PAID;
+      this.amount = priceAfterTrial;
+      this.priceAfterTrial = null;
+      priceChange = "Trial ended";
+    }
+    if (decision == Decision.DOWNGRADE) {
+      this.amount = downgradeAmount;
+      this.downgradeAmount = null;
+      priceChange = "Downgraded";
+    }
+    LocalDate renewed = nextRenewalDate;
+    this.nextRenewalDate = billingCycle.next(renewed, renewalAnchorDay);
+    this.decision = Decision.PENDING;
+    this.updatedAt = now;
+
+    String reason = "Renewed on " + renewed + "; next renewal " + nextRenewalDate;
+    if (priceChange.isEmpty()) {
+      return new RolloverOutcome(Decision.PENDING, null, reason);
+    }
+    return new RolloverOutcome(
+        Decision.PENDING,
+        amount,
+        priceChange + "; now " + amount.toPlainString() + " " + currency + ". " + reason);
   }
 
   public void delete(Instant now) {
@@ -167,6 +232,9 @@ public class Subscription {
   }
 
   public SubscriptionStatus status() {
+    if (cancelledOn != null) {
+      return SubscriptionStatus.CANCELLED;
+    }
     if (decision == Decision.CANCEL) {
       return SubscriptionStatus.CANCELLING;
     }
@@ -213,6 +281,14 @@ public class Subscription {
 
   public LocalDate getNextRenewalDate() {
     return nextRenewalDate;
+  }
+
+  public int getRenewalAnchorDay() {
+    return renewalAnchorDay;
+  }
+
+  public LocalDate getCancelledOn() {
+    return cancelledOn;
   }
 
   public int getNoticeDays() {

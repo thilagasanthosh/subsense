@@ -1,5 +1,6 @@
 package com.subsense.subscription;
 
+import com.subsense.common.ConflictException;
 import com.subsense.common.FieldValidationException;
 import com.subsense.common.NotFoundException;
 import java.time.Clock;
@@ -48,7 +49,7 @@ public class SubscriptionService {
   @Transactional
   public Subscription update(Long id, SubscriptionDetails details) {
     validate(details);
-    Subscription subscription = get(id);
+    Subscription subscription = notCancelled(id);
     subscription.update(details, category(details), now());
     return subscription;
   }
@@ -63,7 +64,7 @@ public class SubscriptionService {
     if (request.decision() == Decision.DOWNGRADE && request.newAmount() == null) {
       throw new FieldValidationException("newAmount", "is required when downgrading");
     }
-    Subscription subscription = get(id);
+    Subscription subscription = notCancelled(id);
     Instant now = now();
     subscription.decide(request.decision(), request.newAmount(), now);
     decisionHistory.save(
@@ -75,7 +76,16 @@ public class SubscriptionService {
   @Transactional(readOnly = true)
   public List<DecisionHistory> history(Long id) {
     get(id);
-    return decisionHistory.findBySubscriptionIdOrderByDecidedAtDesc(id);
+    return decisionHistory.findBySubscriptionIdOrderByDecidedAtDescIdDesc(id);
+  }
+
+  /** Cancelled subscriptions are kept for reports but can no longer be changed. */
+  private Subscription notCancelled(Long id) {
+    Subscription subscription = get(id);
+    if (subscription.status() == SubscriptionStatus.CANCELLED) {
+      throw new ConflictException("Subscription is cancelled");
+    }
+    return subscription;
   }
 
   private static void validate(SubscriptionDetails details) {

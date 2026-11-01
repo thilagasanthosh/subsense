@@ -7,6 +7,11 @@ const base = '/api/v1';
 const notFound = () =>
   HttpResponse.json({ title: 'Not Found', detail: 'Subscription not found' }, { status: 404 });
 
+const cancelled = (id: number) =>
+  db.get(id)?.status === 'CANCELLED'
+    ? HttpResponse.json({ title: 'Conflict', detail: 'Subscription is cancelled' }, { status: 409 })
+    : null;
+
 /** Mirrors the backend's cross-field rules so validation errors look the same. */
 function validate(details: SubscriptionDetails) {
   if (details.nextRenewalDate < details.startDate) {
@@ -42,7 +47,11 @@ export const handlers = [
   http.put(`${base}/subscriptions/:id`, async ({ params, request }) => {
     const details = (await request.json()) as SubscriptionDetails;
     if (!db.get(Number(params.id))) return notFound();
-    return validate(details) ?? HttpResponse.json(db.save(details, Number(params.id)));
+    return (
+      cancelled(Number(params.id)) ??
+      validate(details) ??
+      HttpResponse.json(db.save(details, Number(params.id)))
+    );
   }),
 
   http.delete(`${base}/subscriptions/:id`, ({ params }) => {
@@ -51,6 +60,8 @@ export const handlers = [
   }),
 
   http.post(`${base}/subscriptions/:id/decisions`, async ({ params, request }) => {
+    const conflict = cancelled(Number(params.id));
+    if (conflict) return conflict;
     const s = db.decide(Number(params.id), (await request.json()) as DecisionRequest);
     return s ? HttpResponse.json(s) : notFound();
   }),
