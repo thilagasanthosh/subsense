@@ -74,9 +74,16 @@ function Detail({ subscription: s }: { subscription: Subscription }) {
               <dd>{formatMoney(s.annualCostReporting)}</dd>
             </div>
             <div>
-              <dt>{s.type === 'FREE_TRIAL' ? 'Trial ends' : 'Next renewal'}</dt>
+              <dt>
+                {s.status === 'CANCELLED'
+                  ? 'Ended'
+                  : s.type === 'FREE_TRIAL'
+                    ? 'Trial ends'
+                    : 'Next renewal'}
+              </dt>
               <dd>
-                {formatDate(s.nextRenewalDate)} <RenewalBadge days={s.daysUntilRenewal} />
+                {formatDate(s.nextRenewalDate)}{' '}
+                {s.status !== 'CANCELLED' && <RenewalBadge days={s.daysUntilRenewal} />}
               </dd>
             </div>
             <div>

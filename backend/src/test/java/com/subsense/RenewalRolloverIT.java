@@ -151,6 +151,19 @@ class RenewalRolloverIT {
         .andExpect(jsonPath("$", hasSize(1)));
   }
 
+  @Test
+  void catchUpHistoryListsTheLatestRenewalFirst() throws Exception {
+    long id = create("2026-09-15");
+
+    rollOverOn(LocalDate.of(2026, 11, 1));
+
+    // Both entries share one timestamp, so the order must not depend on it alone.
+    mvc.perform(get("/api/v1/subscriptions/" + id + "/decisions"))
+        .andExpect(jsonPath("$", hasSize(2)))
+        .andExpect(jsonPath("$[0].reason").value("Renewed on 2026-10-15; next renewal 2026-11-15"))
+        .andExpect(jsonPath("$[1].reason").value("Renewed on 2026-09-15; next renewal 2026-10-15"));
+  }
+
   private void rollOverOn(LocalDate date) throws Exception {
     clock.setDate(date);
     trigger();

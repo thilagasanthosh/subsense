@@ -76,7 +76,7 @@ public class SubscriptionService {
   @Transactional(readOnly = true)
   public List<DecisionHistory> history(Long id) {
     get(id);
-    return decisionHistory.findBySubscriptionIdOrderByDecidedAtDesc(id);
+    return decisionHistory.findBySubscriptionIdOrderByDecidedAtDescIdDesc(id);
   }
 
   /** Cancelled subscriptions are kept for reports but can no longer be changed. */

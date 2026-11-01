@@ -17,6 +17,15 @@ describe('SubscriptionDetailPage', () => {
     expect(screen.queryByLabelText('Downgrade to')).not.toBeInTheDocument();
   });
 
+  it('does not show a next renewal for a cancelled subscription', async () => {
+    const id = cancelled().id;
+    renderAt(`/subscriptions/${id}`, '/subscriptions/:id', <SubscriptionDetailPage />);
+
+    expect(await screen.findByText('Ended')).toBeInTheDocument();
+    expect(screen.queryByText('Next renewal')).not.toBeInTheDocument();
+    expect(screen.queryByText('Today')).not.toBeInTheDocument();
+  });
+
   it('still offers decisions for a live subscription', async () => {
     const id = db.list().find((s) => s.name === 'Claude Pro')!.id;
     renderAt(`/subscriptions/${id}`, '/subscriptions/:id', <SubscriptionDetailPage />);

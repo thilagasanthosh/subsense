@@ -5,5 +5,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface DecisionHistoryRepository extends JpaRepository<DecisionHistory, Long> {
 
-  List<DecisionHistory> findBySubscriptionIdOrderByDecidedAtDesc(Long subscriptionId);
+  List<DecisionHistory> findBySubscriptionIdOrderByDecidedAtDescIdDesc(Long subscriptionId);
 }
