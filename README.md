@@ -184,6 +184,7 @@ I use AI tooling (Claude Code) as a standard part of every stage, with a human d
 | Acceptance tests | Turns acceptance criteria into Gherkin and suggests edge cases (month ends, leap years, rounding, time zones) | Keep the scenarios that matter |
 | Implementation | `/tdd F-xx` works in red-green-refactor cycles, running the formatter and tests each step | Review every diff |
 | Code review | `/review-pr` checks the branch against the spec and [CLAUDE.md](CLAUDE.md): correctness, tests, security, money and date handling, SOLID/DRY/KISS/YAGNI | Fix or reject findings; CI must be green |
+| Pull request | `/create-pr` checks the branch and commits, runs the checks, and fills in the [PR template](.github/pull_request_template.md) with the changes, test results and review findings | Approve before anything is pushed; merge myself |
 | Debugging | Reads logs and proposes a root cause with a failing test that reproduces it | Confirm the root cause |
 
 The rules the agent follows live in [CLAUDE.md](CLAUDE.md), the commands in [.claude/commands](.claude/commands), and every pull request records how AI was used ([template](.github/pull_request_template.md)).
@@ -199,7 +200,7 @@ subsense/
 │   ├── adr/            Architecture decision records
 │   ├── features/       Feature plans written before implementation
 │   └── screenshots/
-├── .claude/commands/   AI workflow commands: plan-feature, tdd, review-pr
+├── .claude/commands/   AI workflow commands: plan-feature, tdd, review-pr, create-pr
 ├── .github/            CI/CD workflows, PR template, Dependabot
 ├── docker-compose.yml
 ├── SPEC.md             Product and technical specification
