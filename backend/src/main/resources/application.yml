@@ -1,0 +1,40 @@
+spring:
+  application:
+    name: subsense
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/subsense}
+    username: ${DB_USERNAME:subsense}
+    password: ${DB_PASSWORD:subsense}
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+  flyway:
+    enabled: true
+  http:
+    client:
+      connect-timeout: 5s
+      read-timeout: 10s
+
+server:
+  port: ${PORT:8080}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+
+subsense:
+  reporting-currency: ${SUBSENSE_REPORTING_CURRENCY:GBP}
+  time-zone: ${SUBSENSE_TIME_ZONE:Europe/London}
+  fx:
+    base-url: ${SUBSENSE_FX_BASE_URL:https://api.frankfurter.dev/v1}
+    refresh-cron: ${SUBSENSE_FX_REFRESH_CRON:0 0 6 * * *}
+    refresh-on-startup: ${SUBSENSE_FX_REFRESH_ON_STARTUP:true}

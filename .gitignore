@@ -1,0 +1,17 @@
+# Build output
+target/
+dist/
+coverage/
+node_modules/
+
+# Local settings and secrets
+.env
+.env.local
+*.local
+
+# IDEs and OS
+.idea/
+*.iml
+.vscode/*
+!.vscode/extensions.json
+.DS_Store

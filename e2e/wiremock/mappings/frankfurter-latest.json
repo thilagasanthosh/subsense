@@ -1,0 +1,16 @@
+{
+  "request": {
+    "method": "GET",
+    "urlPath": "/latest"
+  },
+  "response": {
+    "status": 200,
+    "headers": { "Content-Type": "application/json" },
+    "jsonBody": {
+      "amount": 1.0,
+      "base": "EUR",
+      "date": "2026-10-30",
+      "rates": { "GBP": 0.85, "INR": 90.0, "USD": 1.1 }
+    }
+  }
+}

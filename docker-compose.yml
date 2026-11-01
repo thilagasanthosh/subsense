@@ -1,0 +1,55 @@
+# docker compose up --build        -> app on http://localhost:3000, API on :8080
+# docker compose --profile e2e up  -> also starts a WireMock stub for exchange rates (end-to-end tests)
+name: subsense
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: subsense
+      POSTGRES_USER: subsense
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-subsense}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U subsense -d subsense"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  backend:
+    build: ./backend
+    image: subsense-backend:local
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/subsense
+      DB_USERNAME: subsense
+      DB_PASSWORD: ${DB_PASSWORD:-subsense}
+      SUBSENSE_REPORTING_CURRENCY: ${SUBSENSE_REPORTING_CURRENCY:-GBP}
+      SUBSENSE_FX_BASE_URL: ${SUBSENSE_FX_BASE_URL:-https://api.frankfurter.dev/v1}
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  frontend:
+    build: ./frontend
+    image: subsense-frontend:local
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+
+  # Fixed exchange rates for repeatable end-to-end tests.
+  fx-stub:
+    image: wiremock/wiremock:3.13.2
+    profiles: ["e2e"]
+    volumes:
+      - ./e2e/wiremock:/home/wiremock
+    ports:
+      - "8089:8080"
+
+volumes:
+  pgdata:
