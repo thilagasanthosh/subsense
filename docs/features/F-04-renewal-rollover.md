@@ -215,7 +215,7 @@ None.
 1. **Pending with auto-renew off:** SPEC.md doesn't say what happens. I suggest **it lapses to `CANCELLED`**, because not auto-renewing means the service ends unless you act. The alternative is to leave it "overdue" and keep asking. Which do you want?
 2. **Cucumber and the clock:** e2e runs against Docker with the real date, so Cucumber can't reach 31 Jan. I suggest the test-only `POST /api/v1/jobs/rollover` (off by default, on only in the e2e profile), with the month-end dates proved in unit and IT tests. The alternative is a "fixed date" setting for the e2e backend: more realistic, but it needs a restart for each date. OK to go with the trigger endpoint?
 3. **Cancel timing:** I've followed SPEC.md (Cancelled on the renewal date) while renewals advance the day after. Happy to make both "the day after" if you'd prefer one rule.
-4. **Your own data:** after this ships, your two Airtel plans (Renew, 5 and 6 Nov) will move to 5 and 6 Dec on 6 and 7 Nov, and their decisions reset to Pending. That's expected behaviour, not data loss.
+4. **Existing data:** after this ships, a subscription marked Renew for 5 Nov moves to 5 Dec on 6 Nov, and its decision resets to Pending. That's expected behaviour, not data loss.
 5. **Risk, time zones:** a job at 00:15 London time during the clock change. Covered by test 27, and Spring's `zone` attribute on `@Scheduled`.
 
 ## Implementation notes (deviations from this plan)
