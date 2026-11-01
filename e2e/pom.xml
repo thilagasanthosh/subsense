@@ -16,7 +16,7 @@
   <properties>
     <maven.compiler.release>21</maven.compiler.release>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <cucumber.version>7.34.9</cucumber.version>
+    <cucumber.version>8.0.4</cucumber.version>
     <playwright.version>1.64.0</playwright.version>
     <junit.version>5.13.4</junit.version>
     <jackson.version>2.19.2</jackson.version>
