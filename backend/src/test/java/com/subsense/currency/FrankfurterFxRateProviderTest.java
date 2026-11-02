@@ -32,6 +32,9 @@ class FrankfurterFxRateProviderTest {
               GBP,
               ZoneId.of("Europe/London"),
               new SubSenseProperties.Fx(BASE_URL, "0 0 6 * * *", false),
+              null,
+              null,
+              null,
               null));
 
   @Test

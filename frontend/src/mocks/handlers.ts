@@ -69,4 +69,16 @@ export const handlers = [
   http.get(`${base}/subscriptions/:id/decisions`, ({ params }) =>
     HttpResponse.json(db.decisions(Number(params.id))),
   ),
+
+  http.get(`${base}/settings/notifications`, () =>
+    HttpResponse.json({
+      server: 'https://ntfy.sh',
+      topicConfigured: false,
+      offsets: [14, 7, 1],
+    }),
+  ),
+
+  http.post(`${base}/settings/notifications/test`, () =>
+    HttpResponse.json({ detail: 'Notifications are not configured' }, { status: 503 }),
+  ),
 ];

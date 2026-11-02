@@ -17,4 +17,8 @@ public interface SubscriptionRepository extends JpaRepository<Subscription, Long
       "select s.id from Subscription s where s.deletedAt is null and s.cancelledOn is null"
           + " and s.nextRenewalDate <= :today")
   List<Long> findIdsDueForRollover(LocalDate today);
+
+  /** All non-deleted, non-cancelled subscriptions eligible to receive push reminders. */
+  @Query("select s from Subscription s where s.deletedAt is null and s.cancelledOn is null")
+  List<Subscription> findAllEligibleForReminders();
 }

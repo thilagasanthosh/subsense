@@ -61,8 +61,11 @@ jobs:
     runs-on: ubuntu-latest
     env:
       SUBSENSE_FX_BASE_URL: http://fx-stub:8080
-      # Enables the test-only POST /api/v1/jobs/rollover used by the @F-04 scenarios.
+      # Enables the test-only POST /api/v1/jobs/rollover and /jobs/reminders used by @F-04/@F-05.
       SUBSENSE_JOBS_MANUAL_TRIGGER: 'true'
+      # Route ntfy calls through the WireMock stub so e2e tests do not hit ntfy.sh.
+      SUBSENSE_NTFY_SERVER: http://fx-stub:8080
+      SUBSENSE_NTFY_TOPIC: subsense-e2e
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-java@v6

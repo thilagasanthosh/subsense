@@ -30,6 +30,10 @@ services:
       SUBSENSE_FX_BASE_URL: ${SUBSENSE_FX_BASE_URL:-https://api.frankfurter.dev/v1}
       # Test-only "run rollover now" endpoint; set to true for end-to-end tests only.
       SUBSENSE_JOBS_MANUAL_TRIGGER: ${SUBSENSE_JOBS_MANUAL_TRIGGER:-false}
+      # Renewal reminders (F-05); reminders are off until a topic is set in .env.
+      SUBSENSE_NTFY_SERVER: ${SUBSENSE_NTFY_SERVER:-https://ntfy.sh}
+      SUBSENSE_NTFY_TOPIC: ${SUBSENSE_NTFY_TOPIC:-}
+      SUBSENSE_NTFY_TOKEN: ${SUBSENSE_NTFY_TOKEN:-}
     ports:
       - "8080:8080"
     depends_on:
@@ -44,7 +48,7 @@ services:
     depends_on:
       - backend
 
-  # Fixed exchange rates for repeatable end-to-end tests.
+  # Fixed exchange rates and a stand-in ntfy server for repeatable end-to-end tests.
   fx-stub:
     image: wiremock/wiremock:3.13.2
     profiles: ["e2e"]

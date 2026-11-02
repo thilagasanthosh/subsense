@@ -1,0 +1,13 @@
+{
+  "priority": 10,
+  "request": {
+    "method": "POST",
+    "url": "/",
+    "bodyPatterns": [{ "matchesJsonPath": { "expression": "$.topic", "equalTo": "subsense-e2e" } }]
+  },
+  "response": {
+    "status": 200,
+    "headers": { "Content-Type": "application/json" },
+    "jsonBody": { "id": "e2e", "event": "message", "topic": "subsense-e2e" }
+  }
+}

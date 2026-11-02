@@ -23,6 +23,7 @@ I pay for AI tools, streaming, a TV licence, antivirus and mobile plans in the U
 - **Renewal decisions:** Renew, Cancel or Downgrade, with an audit trail of who decided and when.
 - **Renewals timeline:** the next 90 days grouped by week.
 - **Renewal rollover:** every night (and on startup) renewal dates move on by one cycle and decisions take effect: Cancel becomes Cancelled, Downgrade applies the new price, free trials become paid plans. Month ends stay correct (31 Jan → 28/29 Feb → 31 Mar), and every automatic change is in the audit trail.
+- **Push reminders via [ntfy](https://ntfy.sh):** at 08:00 London time, 14 days, 7 days and 1 day before each renewal date the app sends a push notification to your phone — exactly once, idempotent across restarts and retries. Subscribe to your private topic in the ntfy app; set the topic in `.env` and the app takes care of the rest.
 - **Privacy by design:** payment methods are labels only ("Visa ending 4417"); validation rejects anything that looks like a card number, in the UI, the API and the database.
 
 **Roadmap** (full detail in [SPEC.md](SPEC.md))
@@ -128,9 +129,26 @@ UI only, no backend: `npm run dev:mock` serves the app with sample data from a m
 | `SUBSENSE_FX_REFRESH_CRON` | `0 0 6 * * *` | When rates refresh |
 | `SUBSENSE_ROLLOVER_CRON` | `0 15 0 * * *` | When renewals roll over (in `SUBSENSE_TIME_ZONE`) |
 | `SUBSENSE_ROLLOVER_ON_STARTUP` | `true` | Catch up missed rollovers when the app starts |
-| `SUBSENSE_JOBS_MANUAL_TRIGGER` | `false` | Test only: enables `POST /api/v1/jobs/rollover` for end-to-end tests |
+| `SUBSENSE_NTFY_SERVER` | `https://ntfy.sh` | ntfy server (self-hosting supported) |
+| `SUBSENSE_NTFY_TOPIC` | _(empty — reminders off)_ | Your private topic. Generate with `openssl rand -hex 16`; keep it in `.env` only. |
+| `SUBSENSE_NTFY_TOKEN` | _(empty)_ | Optional access token for protected topics |
+| `SUBSENSE_REMINDER_OFFSETS` | `14,7,1` | Days before renewal to send a reminder |
+| `SUBSENSE_REMINDER_CRON` | `0 0 8 * * *` | When reminders run (default 08:00 London time) |
+| `SUBSENSE_APP_URL` | `http://localhost:3000` | Base URL embedded in notification click links |
+| `SUBSENSE_JOBS_MANUAL_TRIGGER` | `false` | Test only: enables `POST /api/v1/jobs/rollover` and `POST /api/v1/jobs/reminders` |
 
 Copy `.env.example` to `.env` to override them for Docker Compose.
+
+### Setting up push reminders
+
+1. Install the **ntfy** app on your phone ([iOS](https://apps.apple.com/app/ntfy/id1625396347) / [Android](https://play.google.com/store/apps/details?id=io.heckel.ntfy)).
+2. Generate a private topic name: `openssl rand -hex 16`
+3. Subscribe to that topic in the ntfy app.
+4. Add to `.env`:
+   ```
+   SUBSENSE_NTFY_TOPIC=<your-topic>
+   ```
+5. Restart the stack and open **Settings → Notifications → Send test notification** to verify.
 
 ## Tests
 
