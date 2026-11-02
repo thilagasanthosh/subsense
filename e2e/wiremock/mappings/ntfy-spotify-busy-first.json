@@ -1,0 +1,12 @@
+{
+  "priority": 1,
+  "scenarioName": "spotify-busy",
+  "requiredScenarioState": "Started",
+  "newScenarioState": "recovered",
+  "request": {
+    "method": "POST",
+    "url": "/",
+    "bodyPatterns": [{ "matchesJsonPath": { "expression": "$.title", "contains": "Spotify" } }]
+  },
+  "response": { "status": 503, "body": "busy" }
+}

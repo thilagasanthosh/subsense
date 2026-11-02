@@ -41,6 +41,16 @@ subsense:
   rollover:
     cron: ${SUBSENSE_ROLLOVER_CRON:0 15 0 * * *}
     run-on-startup: ${SUBSENSE_ROLLOVER_ON_STARTUP:true}
+  ntfy:
+    server: ${SUBSENSE_NTFY_SERVER:https://ntfy.sh}
+    topic: ${SUBSENSE_NTFY_TOPIC:}
+    token: ${SUBSENSE_NTFY_TOKEN:}
+    retry-backoff: ${SUBSENSE_NTFY_RETRY_BACKOFF:1s}
+  reminders:
+    offsets: ${SUBSENSE_REMINDER_OFFSETS:14,7,1}
+    cron: ${SUBSENSE_REMINDER_CRON:0 0 8 * * *}
+    run-on-startup: ${SUBSENSE_REMINDER_ON_STARTUP:true}
+  app-url: ${SUBSENSE_APP_URL:http://localhost:3000}
   jobs:
-    # Test-only POST /api/v1/jobs/rollover; never enable outside end-to-end tests.
+    # Test-only POST /api/v1/jobs/rollover and /jobs/reminders; never enable outside e2e tests.
     manual-trigger: ${SUBSENSE_JOBS_MANUAL_TRIGGER:false}

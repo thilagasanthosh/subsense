@@ -103,3 +103,9 @@ export interface DashboardSummary {
   spendByCategory: CategorySpend[];
   needsDecision: Subscription[];
 }
+
+export interface NotificationSettings {
+  server: string;
+  topicConfigured: boolean;
+  offsets: number[];
+}

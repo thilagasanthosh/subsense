@@ -65,6 +65,11 @@ final class ApiClient {
     send("POST", "/jobs/rollover", null, 200);
   }
 
+  /** Test-only trigger; returns {"sent": n, "failed": n, "skipped": n}. */
+  JsonNode runReminders() {
+    return send("POST", "/jobs/reminders", null, 200);
+  }
+
   private JsonNode send(String method, String path, String body, int expectedStatus) {
     HttpRequest request =
         HttpRequest.newBuilder(URI.create(baseUrl + path))

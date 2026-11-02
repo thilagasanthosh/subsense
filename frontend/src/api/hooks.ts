@@ -5,6 +5,7 @@ import type {
   DashboardSummary,
   DecisionEntry,
   DecisionRequest,
+  NotificationSettings,
   Subscription,
   SubscriptionDetails,
 } from './types';
@@ -15,6 +16,7 @@ const keys = {
   decisions: (id: number) => ['subscriptions', id, 'decisions'] as const,
   dashboard: ['dashboard'] as const,
   categories: ['categories'] as const,
+  notificationSettings: ['notificationSettings'] as const,
 };
 
 export const useSubscriptions = () =>
@@ -88,3 +90,14 @@ export function useDecide(id: number) {
     onSuccess: invalidate,
   });
 }
+
+export const useNotificationSettings = () =>
+  useQuery({
+    queryKey: keys.notificationSettings,
+    queryFn: () => api<NotificationSettings>('/settings/notifications'),
+  });
+
+export const useSendTestNotification = () =>
+  useMutation({
+    mutationFn: () => api<void>('/settings/notifications/test', { method: 'POST' }),
+  });
